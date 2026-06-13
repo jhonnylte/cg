@@ -113,7 +113,10 @@ class Objeto3D:
       self.normais = calcular_normais_faces(self.vertices, self.faces)
 
 
-""" CRIAÇÃO DO PEÃO COM MARCHING CUBES """
+"""========================================================================="""
+""" PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO """
+"""========================================================================="""
+
 N = 8
 
 x = np.linspace(-4, 4, N)
@@ -137,41 +140,80 @@ esfera = np.sqrt(X**2 + (Y - 9.5)**2 + Z**2) - 2
 volume = np.minimum(cilindro, tronco)
 volume = np.minimum(volume, esfera)
 
+
 peao_vertices, peao_faces, peao_normais, _ = marching_cubes(
     volume,
-    level=0
+    level=0,
+    spacing=(
+        x[1]-x[0],
+        y[1]-y[0],
+        z[1]-z[0]
+    )
 )
 
-peao_vertices[:,0] = np.interp(
-    peao_vertices[:,0],
-    [0, N-1],
-    [x.min(), x.max()]
-)
+peao_vertices[:,0] += x.min()
+peao_vertices[:,1] += y.min()
+peao_vertices[:,2] += z.min()
 
-peao_vertices[:,1] = np.interp(
-    peao_vertices[:,1],
-    [0, N-1],
-    [y.min(), y.max()]
-)
-
-peao_vertices[:,2] = np.interp(
-    peao_vertices[:,2],
-    [0, N-1],
-    [z.min(), z.max()]
-)
 
 peao = Objeto3D(
     vertices=peao_vertices,
     faces=peao_faces,
     normais=peao_normais
 )
-""""====================PEÃO CRIADO COM MARCHING CUBES===================="""
-"""======================================================================="""
+
+peaoScm = peao.translacao(5, 0, 5)
+
+"""========================================================================="""
+"""==================== PEÃO PEÃO PEÃO PEÃO PEÃO PEÃO ======================"""
+"""========================================================================="""
 
 
 
+"""========================================================================="""
+"""     DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA         """
+"""========================================================================="""
+
+N = 10
+
+x = np.linspace(-4, 4, N)
+y = np.linspace(0, 8, N)
+z = np.linspace(-4, 4, N)
+
+X, Y, Z = np.meshgrid(
+    x, y, z,
+    indexing='ij'
+)
+
+cilindroDama = np.sqrt(X**2 + Z**2) - 3
+cilindroDama[(Y < 0) | (Y > 6)] = 1
+
+dama_vertices, dama_faces, dama_normais, _ = marching_cubes(
+    cilindroDama,
+    level=0,
+    spacing=(
+        x[1]-x[0],
+        y[1]-y[0],
+        z[1]-z[0]
+    )
+)
+
+dama_vertices[:,0] += x.min()
+dama_vertices[:,1] += y.min()
+dama_vertices[:,2] += z.min()
+
+dama = Objeto3D(
+    vertices=dama_vertices,
+    faces=dama_faces,
+    normais=dama_normais
+)
+
+damaScm = dama.translacao(6, 0, 1).escala(1, 0.2, 1)
 
 
+"""========================================================================="""
+"""==================== DAMA DAMA DAMA DAMA DAMA DAMA ======================"""
+"""========================================================================="""
 
 """ Variável global para guardar a posição anterior da câmera """
 ultimo_eye = [10.0, 20.0, 10.0]
@@ -223,27 +265,63 @@ def atualizar_grafico():
     eixo_3d.scatter(ex, ez, ey, color='black', s=100, marker='.', label='')
     eixo_3d.scatter(0, 0, 0, color='green', s=200, marker='.', label='Origem (0,0,0)')
 
-    """ Desenhar o Peão usando os vértices gerados pelo marching cubes """
-    Vpeao = peao.vertices
+    """========================================================================="""
+    """ Desenhar o PEÃO usando os vértices gerados pelo marching cubes """
+    """========================================================================="""
+
+    Vpeao = peaoScm.vertices
 
     triangulosPeao = []
 
-    for face in peao.faces:
-
-        triangulo = peao.vertices[face]
-
+    for face in peaoScm.faces:
+        triangulo = Vpeao[face]
         triangulo = triangulo[:, [0,2,1]]
-
         triangulosPeao.append(triangulo)
 
     malhaPeao = Poly3DCollection(
         triangulosPeao,
-        edgecolor='blue',
-        linewidth=0.2,
-        alpha=0.8
+        edgecolor='black',
+        facecolor='black',
+        linewidth=0.1,
+        alpha=1.0
     )
 
     eixo_3d.add_collection3d(malhaPeao)
+    """========================================================================="""
+    """========================================================================="""
+
+
+
+
+
+    """========================================================================="""
+    """ Desenhar a DAMA usando os vértices gerados pelo marching cubes """
+    """========================================================================="""
+    Vdama = damaScm.vertices
+
+    triangulosDama = []
+
+    for face in damaScm.faces:
+        triangulo = Vdama[face]
+        triangulo = triangulo[:, [0,2,1]]
+        triangulosDama.append(triangulo)
+
+    malhaDama = Poly3DCollection(
+        triangulosDama,
+        edgecolor='red',
+        facecolor='red',
+        linewidth=0.1,
+        alpha=1
+    )
+
+    eixo_3d.add_collection3d(malhaDama)
+
+
+    """========================================================================="""
+    """========================================================================="""
+
+
+
 
     # 3. Caixa de Visualização (Frustum)
     E = np.array([ex, ez, ey])      
