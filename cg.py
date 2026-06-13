@@ -120,7 +120,7 @@ class Objeto3D:
 N = 8
 
 x = np.linspace(-4, 4, N)
-y = np.linspace(0, 12, N)
+y = np.linspace(-1, 12, N)
 z = np.linspace(-4, 4, N)
 
 X, Y, Z = np.meshgrid(
@@ -128,9 +128,18 @@ X, Y, Z = np.meshgrid(
     indexing='ij'
 )
 
-cilindro = np.sqrt(X**2 + Z**2) - 3
-cilindro[Y > 2] = 1
+# Cilindro peão
+lateral = np.sqrt(X**2 + Z**2) - 3
 
+fundo = -Y
+topo = Y - 2
+
+cilindro = np.maximum(
+    lateral,
+    np.maximum(fundo, topo)
+)
+
+# Tronco de piramide do peão
 raio_tronco = 2 - (Y - 4)/4
 tronco = np.sqrt(X**2 + Z**2) - raio_tronco
 tronco[(Y < 2) | (Y > 8)] = 1
@@ -174,7 +183,7 @@ peaoScm = peao.translacao(5, 0, 5)
 """     DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA DAMA         """
 """========================================================================="""
 
-N = 10
+N = 8
 
 x = np.linspace(-4, 4, N)
 y = np.linspace(0, 8, N)
@@ -185,8 +194,17 @@ X, Y, Z = np.meshgrid(
     indexing='ij'
 )
 
-cilindroDama = np.sqrt(X**2 + Z**2) - 3
-cilindroDama[(Y < 0) | (Y > 6)] = 1
+raio = 3
+lateral = np.sqrt(X**2 + Z**2) - raio
+
+fundo = 3 - Y
+topo = Y - 7
+
+cilindroDama = np.maximum(
+    lateral,
+    np.maximum(fundo, topo)
+)
+
 
 dama_vertices, dama_faces, dama_normais, _ = marching_cubes(
     cilindroDama,
@@ -208,7 +226,7 @@ dama = Objeto3D(
     normais=dama_normais
 )
 
-damaScm = dama.translacao(6, 0, 1).escala(1, 0.2, 1)
+damaScm = dama.translacao(15, 0, 15).escala(1, 0.3, 1)
 
 
 """========================================================================="""
